@@ -2,24 +2,14 @@ express = require("express");
 
 const router = express.Router();
 
-const { body } = require("express-validator");
 const coursesController = require("../controllers/courses-controller");
+const { validationSchema } = require("../middlewares/validationSchemas");
 
 // Get all courses - Add course
 router
   .route("/")
   .get(coursesController.getAllCourses)
-  .post(
-    [
-      body("title")
-        .notEmpty()
-        .withMessage("Title is required")
-        .isLength({ min: 2, max: 20 })
-        .withMessage("Length must be at least 2 chars"),
-      body("price").notEmpty().withMessage("Price is required"),
-    ],
-    coursesController.addCourse
-  );
+  .post(validationSchema(), coursesController.addCourse);
 
 // Get course - Update course - Delete course
 router
