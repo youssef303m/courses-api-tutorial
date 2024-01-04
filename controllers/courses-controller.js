@@ -1,21 +1,27 @@
 const Course = require("../models/course-model");
 const { validationResult } = require("express-validator");
+const httpStatus = require("../utils/httpStatus");
 
 const getAllCourses = async (req, res) => {
   // Get all courses from DB using Course model
   const courses = await Course.find();
-  res.json(courses);
+  res.json({ status: httpStatus.SUCCESS, data: { courses } });
 };
 
 const getCourse = async (req, res) => {
   try {
     const course = await Course.findById(req.params.courseId);
     if (!course) {
-      return res.status(404).json({ msg: "Course Not Found" });
+      return res.status(404).json({
+        status: httpStatus.FAIL,
+        data: { course: null },
+      });
     }
-    return res.json(course);
+    return res.json({ status: httpStatus.SUCCESS, data: { course } });
   } catch (err) {
-    return res.status(400).json({ msg: "Invalid Object ID" });
+    return res
+      .status(400)
+      .json({ status: httpStatus.ERROR, message: err.message });
   }
 };
 
@@ -24,17 +30,19 @@ const deleteCourse = async (req, res) => {
     const deletedCourse = await Course.findById(req.params.courseId);
     await Course.deleteOne({ _id: req.params.courseId });
     if (!deletedCourse) {
-      return res.status(404).json({ msg: "Course Not Found" });
+      return res.status(404).json({ status: httpStatus.FAIL, data: null });
     }
-    return res.status(200).json(deletedCourse);
+    return res.status(200).json({ status: httpStatus.SUCCESS, data: null });
   } catch (err) {
-    return res.status(400).json({ msg: "Invalid Object ID" });
+    return res
+      .status(400)
+      .json({ status: httpStatus.ERROR, message: err.message });
   }
 };
 
 const updateCourse = async (req, res) => {
+  const courseId = req.params.courseId;
   try {
-    const courseId = req.params.courseId;
     const updatedCourse = await Course.findByIdAndUpdate(
       courseId,
       {
@@ -44,26 +52,36 @@ const updateCourse = async (req, res) => {
     );
 
     if (!updatedCourse) {
-      return res.status(404).json({ msg: "Course not found" });
+      return res
+        .status(404)
+        .json({ status: httpStatus.FAIL, data: { course: null } });
     }
 
-    return res.status(200).json(updatedCourse);
+    return res
+      .status(200)
+      .json({ status: httpStatus.SUCCESS, data: { course: updatedCourse } });
   } catch (err) {
-    return res.status(400).json({ msg: "Invalid Object ID" });
+    return res
+      .status(400)
+      .json({ status: httpStatus.ERROR, message: err.message });
   }
 };
 
 const addCourse = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(400).json(errors.array());
+    return res
+      .status(400)
+      .json({ status: httpStatus.FAIL, data: errors.array() });
   }
 
   const newCourse = new Course(req.body);
   // Save the created course to the db
   await newCourse.save();
 
-  res.status(201).json(newCourse);
+  return res
+    .status(201)
+    .json({ status: httpStatus.SUCCESS, data: { course: newCourse } });
 };
 
 module.exports = {
