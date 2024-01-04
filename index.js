@@ -1,4 +1,5 @@
 const express = require("express");
+var cors = require("cors");
 const bodyParser = require("body-parser");
 const coursesRouter = require("./routes/courses-routes");
 const mongoose = require("mongoose");
@@ -14,6 +15,7 @@ mongoose.connect(URI).then(() => {
   console.log("MongoDB server started successfully.");
 });
 
+app.use(cors());
 app.use(bodyParser.json());
 
 app.use("/api/courses", coursesRouter);
