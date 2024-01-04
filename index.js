@@ -4,10 +4,10 @@ const coursesRouter = require("./routes/courses-routes");
 const mongoose = require("mongoose");
 require("dotenv").config();
 
-const PORT = 3000;
 const app = express();
+const PORT = process.env.PORT || 4000;
 
-const URI = process.env.DB_URI;
+const URI = process.env.MONGO_URI;
 
 mongoose.connect(URI).then(() => {
   console.log("MongoDB server started successfully.");

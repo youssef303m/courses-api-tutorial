@@ -3,8 +3,13 @@ const { validationResult } = require("express-validator");
 const httpStatus = require("../utils/httpStatus");
 
 const getAllCourses = async (req, res) => {
+  // Pagination using query parameters
+  const query = req.query;
+  const limit = query.limit || 10;
+  const page = query.page || 1;
+  const skip = (page - 1) * limit;
   // Get all courses from DB using Course model
-  const courses = await Course.find({}, { __v: false });
+  const courses = await Course.find({}, { __v: false }).limit(limit).skip(skip);
   res.json({ status: httpStatus.SUCCESS, data: { courses } });
 };
 
