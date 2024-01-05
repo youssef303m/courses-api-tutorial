@@ -2,6 +2,8 @@ const asyncWrapper = require("../middlewares/asyncWrapper");
 const User = require("../models/user-model");
 const bcrypt = require("bcryptjs");
 const httpStatus = require("../utils/httpStatus");
+const jwt = require("jsonwebtoken");
+const generateJWT = require("../utils/generateJWT");
 
 const getAllUsers = asyncWrapper(async (req, res) => {
   // Pagination using query parameters
@@ -21,12 +23,12 @@ const register = asyncWrapper(async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
 
   // Check if user exists
-  const userExists = await User.findOne({ email });
-  if (userExists) {
-    return res
-      .status(400)
-      .json({ status: httpStatus.FAIL, message: "User already exists" });
-  }
+  // const userExists = await User.findOne({ email });
+  // if (userExists) {
+  //   return res
+  //     .status(400)
+  //     .json({ status: httpStatus.FAIL, message: "User already exists" });
+  // }
 
   // Password hashing
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -37,6 +39,10 @@ const register = asyncWrapper(async (req, res) => {
     email,
     password: hashedPassword,
   });
+
+  // Generate JWT (JSON Web Token)
+  const token = await generateJWT({ email: newUser.email, id: newUser._id });
+  newUser.token = token;
 
   await newUser.save();
 
@@ -67,9 +73,14 @@ const login = asyncWrapper(async (req, res) => {
   const isPasswordMatching = await bcrypt.compare(password, user.password);
 
   if (user && isPasswordMatching) {
+    // Logged in Successfully
+
+    // Generate JWT (JSON Web Token)
+    const token = await generateJWT({ email: user, id: user._id });
+
     return res.status(200).json({
       status: httpStatus.SUCCESS,
-      data: { user },
+      data: { token },
     });
   }
   return res
