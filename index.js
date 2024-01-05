@@ -1,10 +1,11 @@
 const express = require("express");
 var cors = require("cors");
 const bodyParser = require("body-parser");
-const coursesRouter = require("./routes/courses-routes");
 const mongoose = require("mongoose");
 const httpStatus = require("./utils/httpStatus");
 require("dotenv").config();
+const coursesRouter = require("./routes/courses-routes");
+const usersRouter = require("./routes/users-routes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,6 +20,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.use("/api/courses", coursesRouter);
+app.use("/api/users", usersRouter);
 
 app.all("*", (req, res) => {
   return res.status(404).json({
