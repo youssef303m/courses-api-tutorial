@@ -15,7 +15,30 @@ const getAllUsers = asyncWrapper(async (req, res) => {
   return res.json({ status: httpStatus.SUCCESS, data: { users } });
 });
 
-const register = () => {};
+const register = asyncWrapper(async (req, res) => {
+  const { firstName, lastName, email, password } = req.body;
+
+  const userExists = await User.findOne({ email: email });
+
+  if (userExists) {
+    return res
+      .status(400)
+      .json({ status: httpStatus.FAIL, message: "User already exists" });
+  }
+
+  const newUser = new User({
+    firstName,
+    lastName,
+    email,
+    password,
+  });
+
+  await newUser.save();
+
+  return res
+    .status(201)
+    .json({ status: httpStatus.SUCCESS, data: { user: newUser } });
+});
 
 const login = () => {};
 
