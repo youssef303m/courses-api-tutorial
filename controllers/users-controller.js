@@ -1,4 +1,3 @@
-const express = require("express");
 const asyncWrapper = require("../middlewares/asyncWrapper");
 const User = require("../models/user-model");
 const bcrypt = require("bcryptjs");
@@ -22,7 +21,7 @@ const register = asyncWrapper(async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
 
   // Check if user exists
-  const userExists = await User.findOne({ email: email });
+  const userExists = await User.findOne({ email });
   if (userExists) {
     return res
       .status(400)
@@ -46,7 +45,37 @@ const register = asyncWrapper(async (req, res) => {
     .json({ status: httpStatus.SUCCESS, data: { user: newUser } });
 });
 
-const login = () => {};
+const login = asyncWrapper(async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({
+      status: httpStatus.FAIL,
+      message: "Email and password are required",
+    });
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.status(404).json({
+      status: httpStatus.FAIL,
+      message: "This email address is not registered",
+    });
+  }
+
+  const isPasswordMatching = await bcrypt.compare(password, user.password);
+
+  if (user && isPasswordMatching) {
+    return res.status(200).json({
+      status: httpStatus.SUCCESS,
+      data: { user },
+    });
+  }
+  return res
+    .status(400)
+    .json({ status: httpStatus.ERROR, message: "Something went wrong" });
+});
 
 module.exports = {
   getAllUsers,
